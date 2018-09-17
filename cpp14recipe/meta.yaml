@@ -1,0 +1,67 @@
+{% set version = "1.68.0" %}
+{% set filename = "boost_%s.tar.bz2" % version.replace(".", "_") %}
+
+package:
+  name: boost
+  version: {{ version }}
+
+source:
+  fn:  {{ filename }}
+  url: https://dl.bintray.com/boostorg/release/{{ version }}/source/{{ filename }}
+  sha256: 7f6130bc3cf65f56a618888ce9d5ea704fa10b462be126ad053e80e553d6d8b7
+
+build:
+  number: 1
+
+requirements:
+  build:
+    - {{ compiler('cxx') }}
+
+  host:
+    - python
+    - numpy
+    - boost-cpp  {{ version }}
+
+  run:
+    - python
+    - {{ pin_compatible('numpy') }}
+    - boost-cpp  {{ version }}
+
+test:
+  commands:
+    # Verify Python headers are installed.
+    - test -f $PREFIX/include/boost/python.hpp                 # [unix]
+    - test -d $PREFIX/include/boost/python                     # [unix]
+    - if not exist %LIBRARY_INC%\\boost\\python.hpp exit 1     # [win]
+    - if not exist %LIBRARY_INC%\\boost\\python exit 1         # [win]
+
+    # Verify libraries.
+    {% set boost_libs = [
+            "python%s" % py,
+            "numpy%s" % py
+    ] %}
+    {% for each_boost_lib in boost_libs %}
+    - test -f $PREFIX/lib/libboost_{{ each_boost_lib }}.a                                                 # [unix]
+    - test -f $PREFIX/lib/libboost_{{ each_boost_lib }}${SHLIB_EXT}                                       # [unix]
+    - if not exist %PREFIX%\\Library\\bin\\boost_{{ each_boost_lib }}.dll exit 1                          # [win]
+    - if not exist %PREFIX%\\Library\\lib\\boost_{{ each_boost_lib }}.lib exit 1                          # [win]
+    - if not exist %PREFIX%\\Library\\lib\\libboost_{{ each_boost_lib }}.lib exit 1                       # [win]
+    {% endfor %}
+    - conda inspect linkages -p $PREFIX boost  # [not win]
+    - conda inspect objects -p $PREFIX boost  # [osx]
+
+about:
+  home: http://www.boost.org/
+  license: Boost-1.0
+  license_file: LICENSE_1_0.txt
+  summary: Free peer-reviewed portable C++ source libraries.
+
+extra:
+  recipe-maintainers:
+    - ccordoba12
+    - jakirkham
+    - msarahan
+    - ocefpaf
+    - jschueller
+    - scopatz
+    - isuruf
