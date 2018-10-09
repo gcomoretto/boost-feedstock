@@ -42,6 +42,7 @@ LINKFLAGS="${LINKFLAGS} -L${LIBRARY_PATH}"
     toolset=${TOOLSET} \
     python="${PY_VER}" \
     cxxflags="${CXXFLAGS}" \
+    cxxstd=14 \
     linkflags="${LINKFLAGS}" \
     --layout=system \
     --with-python \
